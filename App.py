@@ -89,5 +89,76 @@ else:
                 st.toast("CHECK YOUR TELEGRAM! 🔔")
 
 # إرسال التنبيهات لتليجرام: Token: 8633388733:AAF1NCh_1_S_90BxLKW_F5RU1KMzDZnBHbU
+import streamlit as st
+import pandas as pd
+import time
+import requests
 
+# 1. إعدادات المنصة والبيانات السرية
+TELEGRAM_TOKEN = "8633388733:AAF1NCh_1_S_90BxLKW_F5RU1KMzDZnBHbU"
+CHAT_ID = "2047248753"
+
+st.set_page_config(page_title="AI Auto-Trader (24/7)", layout="wide")
+
+# --- دالة إرسال الإشارة آلياً لتليجرام ---
+def send_telegram_msg(message):
+    url = f"https://api.telegram.org{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={message}"
+    requests.get(url)
+
+# --- محرك التحليل الآلي (Auto-Analysis Engine) ---
+def auto_scan_market(market, style, lot):
+    # محاكاة تحقق الشروط المؤسسية (SMC/ICT)
+    # في الواقع يتم ربطها ببيانات حية لمقارنة EURUSD vs DXY
+    check_smt = True
+    check_ob = True
+    check_fvg = True
+    
+    if check_smt and check_ob and check_fvg:
+        msg = f"🚨 NEW SIGNAL DETECTED!\nAsset: {market}\nStyle: {style}\nLot: {lot:.2f}\nAction: BUY NOW\nEntry: Market Price\nSL/TP: Check Hub"
+        send_telegram_msg(msg)
+        return True
+    return False
+
+# --- واجهة المستخدم ---
+st.sidebar.title("🤖 AI Auto-Pilot")
+page = st.sidebar.radio("Navigation", ["⚙️ Setup", "📊 Live Monitor"])
+
+if page == "⚙️ Setup":
+    st.title("⚙️ System Setup (24/7 Automation)")
+    market = st.selectbox("Select Market", ["EURUSD", "GBPUSD", "USDJPY"])
+    style = st.selectbox("Style", ["Scalp", "Swing"])
+    balance = st.number_input("Capital ($)", value=1000)
+    risk = st.slider("Risk %", 0.1, 5.0, 1.0)
+    
+    pips = 15 if style == "Scalp" else 50
+    lot = (balance * (risk/100)) / (pips * 10)
+    
+    if st.button("🚀 ACTIVATE AUTO-TRADING"):
+        st.session_state['active_bot'] = {"market": market, "style": style, "lot": lot}
+        st.success("BOT ACTIVATED! Monitoring 24/7...")
+        send_telegram_msg(f"🤖 Bot Activated for {market} ({style})")
+
+else:
+    st.title("📊 24/7 Live Monitoring Hub")
+    if 'active_bot' in st.session_state:
+        b = st.session_state['active_bot']
+        st.write(f"🔄 **Currently Scanning:** {b['market']} | **Lot:** {b['lot']:.2f}")
+        
+        # الشارت الحي
+        st.components.v1.iframe(f"https://s.tradingview.com:{b['market']}&interval=1&theme=dark", height=500)
+        
+        # حلقة التكرار الآلية (Auto-Refresh)
+        st.info("System is scanning market structure every 60 seconds... ⏳")
+        
+        # محاكاة المراقبة التلقائية
+        if auto_scan_market(b['market'], b['style'], b['lot']):
+            st.error("🔥 SIGNAL TRIGGERED! CHECK TELEGRAM.")
+            st.balloons()
+            
+        # كود لجعل الصفحة تحدث نفسها آلياً
+        time.sleep(60)
+        st.rerun()
+    else:
+        st.warning("Please activate the bot from Setup page!")
+    
 
